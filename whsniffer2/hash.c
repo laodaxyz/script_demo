@@ -16,6 +16,10 @@ typedef struct nodes{
     struct nodes *next;
 }htnode;
 typedef htnode **hashtable;
+typedef struct header{
+	int count;
+	struct nodes *next;
+}header_t;
 hashtable ht;
 
 int hash( long long key ) {
@@ -48,9 +52,9 @@ int hashtable_insert(hashtable T, htnode *s) {
   }
 }
 
-void hashtable_descrty(hashtable h){
+void hashtable_descrty(hashtable h,int size){
 	int i;
-	for (i = 0; i < HASHSIZE; i++)
+	for (i = 0; i < size; i++)
 	{
 		htnode *p;
 		p = h[i];
@@ -69,15 +73,15 @@ void hashtable_descrty(hashtable h){
 	free(h);
 }
 
-hashtable hashtable_init(){
+hashtable hashtable_init(int size){
 	hashtable h;
-	h = (htnode **)malloc(sizeof(htnode *)*HASHSIZE);
+	h = (htnode **)malloc(sizeof(htnode *)*size);
 	if(h == NULL) {
 		printf("Out of memory!\n");
 		exit(-1);
 	}
 	int i;
-	for (i = 0; i < HASHSIZE; i++)
+	for (i = 0; i < size; i++)
 	{
 		h[i] = (htnode *)malloc(sizeof(htnode));
 		if (h[i] == NULL){
@@ -90,6 +94,47 @@ hashtable hashtable_init(){
 	}
 	return h;
 }
+//排序
+hashtable hashtable_top(hashtable h,int size){
+	header_t header;
+	int i;
+	for (i = 0; i < size; i++)
+	{
+		htnode *p,*tp,*tmp;
+		p = h[i];
+		if (p->next != NULL)
+		{
+			while(p->next != NULL){
+				h[i] = p->next;
+				int ti;
+				if(header.count==0){
+					p->next = NULL;
+					header.next = p;
+				}esle{
+					tp = header.next;
+					for (int ti = 0; ti < header.count; ++ti)
+					{
+
+						if(p->bytes < tp->bytes){
+							if (header.count ==20){
+								tp->next=p;
+							}esle{
+								tp->next=p;
+							}
+							
+						}
+					}
+				}
+				
+				free(p);
+				p = h[i];
+			}
+		}else{
+			free(h[i]);
+		}
+	}
+	return newht;
+}
 
 void call(){
 	int i;
@@ -101,10 +146,11 @@ void call(){
 		hv->tcp   =i+2;
 		hashtable_insert(ht,hv);
 	}
-	hashtable oldht;
+	hashtable oldht,topht;
 	oldht = ht;
-	ht = hashtable_init();
-	hashtable_descrty(oldht);
+	ht = hashtable_init(HASHSIZE);
+	topht = hashtable_top(oldht,HASHSIZE);
+	hashtable_descrty(oldht,HASHSIZE);
 }
 
 // void Daemon()
@@ -127,7 +173,7 @@ void call(){
 int main(int argc, char const *argv[])
 {
 	//Daemon();
-	ht = hashtable_init();
+	ht = hashtable_init(HASHSIZE);
 	call();
 	return 0;
 }

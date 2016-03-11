@@ -54,7 +54,7 @@ typedef struct{
 void handler();
 void callPacket(u_char *arg,const struct pcap_pkthdr* pack,const u_char *content);
 int hash(unsigned long long key);
-hashtable hashtable_init();
+hashtable hashtable_init(int size);
 void hashtable_descrty(hashtable h);
 htnode * hashtable_search(hashtable T, unsigned long long key);
 int hashtable_insert(hashtable T, htnode *s);
@@ -81,8 +81,8 @@ int main(){
 
   signal(SIGALRM, handler);
   alarm(10);
-  ht = hashtable_init();
-  ht_in = hashtable_init();
+  ht = hashtable_init(HASHSIZE);
+  ht_in = hashtable_init(HASHSIZE);
   pcap_loop(device, -1, callPacket, NULL);
   pcap_close(device);
   return 0;
@@ -97,8 +97,8 @@ void handler(){
   hashtable oldht,oldht_in;
   oldht = ht;
   oldht_in = ht_in;
-  ht = hashtable_init();
-  ht_in = hashtable_init();
+  ht = hashtable_init(HASHSIZE);
+  ht_in = hashtable_init(HASHSIZE);
   hashtable_descrty(oldht);
   hashtable_descrty(oldht_in);
   printf("------------------------------------\n");
@@ -187,15 +187,15 @@ int hash(unsigned long long key ) {
   return key % HASHSIZE;
 }
 
-hashtable hashtable_init(){
+hashtable hashtable_init(int size){
   hashtable h;
-  h = (htnode * *)malloc(sizeof(htnode *)*HASHSIZE);
+  h = (htnode * *)malloc(sizeof(htnode *)*size);
   if(h == NULL) {
     printf("Out of memory!\n");
     exit(-1);
   }
   int i;
-  for(i = 0; i < HASHSIZE; i++)
+  for(i = 0; i < size; i++)
   {
     h[i] = (htnode *)malloc(sizeof(htnode));
     if(h[i] == NULL){
@@ -211,57 +211,44 @@ hashtable hashtable_init(){
 
 void hashtable_descrty(hashtable h){
   int i;
-  struct in_addr addr;
-  value *v;
-  xvalue vs[1025];
-  int sock;
-  int j;
-  struct sockaddr_in svraddr;
-  //  char sip[INET_ADDRSTRLEN], dip[INET_ADDRSTRLEN];
-  if((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0){
-    exit(1);
-  }
-  svraddr.sin_family = AF_INET;
-  svraddr.sin_port = htons(4100);
-  if(inet_pton(AF_INET, "127.0.0.1", &svraddr.sin_addr) < 0){
-    exit(1);
-  }
-  if (connect(sock, (const struct sockaddr *)&svraddr, sizeof(svraddr)) < 0){
-    close(sock);
-    return;
-  }
-
-  memset(&vs[0], 0, sizeof(xvalue));
-  vs[0].v.other = 0;
-  vs[0].fbytes  = flowtotal;
-  vs[0].fpacket = packetnums;
+  // value *v;
+  // xvalue vs[1025];
+  // int sock,j;
+  // struct sockaddr_in svraddr;
+  // if((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0){ exit(1); }
+  // svraddr.sin_family = AF_INET;
+  // svraddr.sin_port = htons(4100);
+  // if(inet_pton(AF_INET, "127.0.0.1", &svraddr.sin_addr) < 0){ exit(1); }
+  // if(connect(sock, (const struct sockaddr *)&svraddr, sizeof(svraddr)) < 0){ close(sock);return; }
+  // memset(&vs[0], 0, sizeof(xvalue));
+  // vs[0].v.other = 0;
+  // vs[0].fbytes  = flowtotal;
+  // vs[0].fpacket = packetnums;
 
   for (i = 0; i < HASHSIZE; i++)
   {
     htnode *p;
     p = h[i];
     while(p->next != NULL){
-      //printf("%lld\n", p->ip);
       h[i] = p->next;
-
-      vs[j].v.sip     = p->ip;
-      vs[j].v.tcp     = p->tcp;
-      vs[j].v.udp     = p->udp;
-      vs[j].v.icmp    = p->icmp;
-      vs[j].v.other   = p->other;
-      vs[j].v.bytes   = p->bytes;
-      vs[j].v.packets = p->packets;
-      vs[j].fbytes    = p->bytes;
-      vs[j].fpacket   = p->packets;
-      j++;
+      // vs[j].v.sip     = p->ip;
+      // vs[j].v.tcp     = p->tcp;
+      // vs[j].v.udp     = p->udp;
+      // vs[j].v.icmp    = p->icmp;
+      // vs[j].v.other   = p->other;
+      // vs[j].v.bytes   = p->bytes;
+      // vs[j].v.packets = p->packets;
+      // vs[j].fbytes    = p->bytes;
+      // vs[j].fpacket   = p->packets;
+      // j++;
       free(p);
       p=h[i];
     }
     free(h[i]);
   }
-  write(sock, vs, sizeof(xvalue) * j);
-  close(sock);
   free(h);
+  // write(sock, vs, sizeof(xvalue) * j);
+  // close(sock);
 }
 
 htnode * hashtable_search(hashtable T, unsigned long long key){
