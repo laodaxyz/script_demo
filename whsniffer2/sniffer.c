@@ -18,23 +18,6 @@
 #include <netinet/tcp.h>
 #include <netinet/ip_icmp.h>
 
-#define HASHSIZE 10000
-typedef struct node{
-  u_int32_t ip;
-  unsigned long long bytes;
-  unsigned long long packets;
-  unsigned long long tcp;
-  unsigned long long udp;
-  unsigned long long icmp;
-  unsigned long long arp;
-  unsigned long long other;
-  struct node *next;
-}htnode;
-typedef htnode **hashtable;
-unsigned  long long flowtotal,packetnums;
-bpf_u_int32 netp,maskp;
-hashtable ht,ht_in;
-
 typedef struct value{
   u_int32_t sip;
   unsigned long long packets;
@@ -44,20 +27,39 @@ typedef struct value{
   unsigned long long other;
   unsigned long long bytes;
 }value;
-
 typedef struct{
   value v;
   unsigned long long fpacket;
   unsigned long long fbytes;
 }xvalue;
 
+#define HASHSIZE 10000
+#define HASHSIZEIN 1000
+typedef struct node{
+  u_int32_t ip;
+  unsigned long long bytes;
+  unsigned long long packets;
+  unsigned long long fbytes;
+  unsigned long long fpacket;
+  unsigned long long tcp;
+  unsigned long long udp;
+  unsigned long long icmp;
+  unsigned long long other;
+  struct node *next;
+}htnode;
+typedef htnode **hashtable;
+unsigned  long long flowtotal,packetnums;
+bpf_u_int32 netp,maskp;
+hashtable ht,ht_in;
+
 void handler();
-void callPacket(u_char *arg,const struct pcap_pkthdr* pack,const u_char *content);
-int hash(unsigned long long key);
+void callPacket(u_char *arg, const struct pcap_pkthdr* pack, const u_char *content);
+int hash(u_int32_t ip, int size);
+htnode * hashtable_search(hashtable T, int size, u_int32_t ip);
+int hashtable_insert(hashtable T, int size, htnode *s);
 hashtable hashtable_init(int size);
-void hashtable_descrty(hashtable h);
-htnode * hashtable_search(hashtable T, unsigned long long key);
-int hashtable_insert(hashtable T, htnode *s);
+void hashtable_descrty(hashtable h, int size);
+hashtable hashtable_top(hashtable T, int size);
 
 int main(){
   flowtotal,packetnums = 0;
@@ -79,10 +81,10 @@ int main(){
   printf("The PID of this process is %d\n",getpid());
   printf("------------------------------------\n");
 
-  signal(SIGALRM, handler);
-  alarm(10);
   ht = hashtable_init(HASHSIZE);
-  ht_in = hashtable_init(HASHSIZE);
+  ht_in = hashtable_init(HASHSIZEIN);
+  signal(SIGALRM, handler);
+  alarm(1);
   pcap_loop(device, -1, callPacket, NULL);
   pcap_close(device);
   return 0;
@@ -91,146 +93,184 @@ int main(){
 void handler(){
   printf("flowtotal : %lld\n",flowtotal);
   printf("packetnums: %lld\n",packetnums);
-  signal(SIGALRM, handler);
-  alarm(10);
   flowtotal,packetnums=0;
   hashtable oldht,oldht_in;
   oldht = ht;
   oldht_in = ht_in;
+  //printf("-------------------\n");
   ht = hashtable_init(HASHSIZE);
-  ht_in = hashtable_init(HASHSIZE);
-  hashtable_descrty(oldht);
-  hashtable_descrty(oldht_in);
-  printf("------------------------------------\n");
+  ht_in = hashtable_init(HASHSIZEIN);
+  signal(SIGALRM, handler);
+  alarm(1);
+  //printf("-------------------\n");
+  hashtable_descrty(oldht,HASHSIZE);
+  hashtable_descrty(oldht_in,HASHSIZEIN);
+  //hashtable topht_in;
+  //topht_in = hashtable_init(20);
+  //topht_in = hashtable_top(oldht_in, HASHSIZEIN);
+  //hashtable_descrty(topht_in, 20);
+
+  time_t timep; time(&timep);
+  printf("%s\n",asctime(gmtime(&timep)));
 }
 
 void callPacket(u_char *arg,const struct pcap_pkthdr* pack,const u_char *content)  
 {
-  htnode *hv;
-  const u_char *iphead;
-  u_char *p;
   struct ether_header *ethernet;
   struct iphdr *ip;
-  struct tcphdr *tcp;
-  struct udphdr *udp;
-  struct icmphdr *icmp;
-  struct ether_arp *arp;
-  struct arphdr *arph;
-
   ethernet=(struct ether_header *)content;
-  //printf("%x\n", ethernet->ether_type);
-  if(ntohs(ethernet->ether_type)==ETHERTYPE_IP)  
+  //ip
+  if(ntohs(ethernet->ether_type)==ETHERTYPE_IP)
   {
     ip=(struct iphdr*)(content+14);
     int tot_len=ntohs(ip->tot_len);
-    flowtotal += tot_len;
-    hv = (htnode *)malloc(sizeof(htnode));
-    hv->bytes   = tot_len;
-    hv->packets = 1;
-    hv->tcp     = 0;
-    hv->udp     = 0;
-    hv->icmp    = 0;
-    hv->arp     = 0;
-    hv->other   = 0;
+    //外网包
+    htnode *hv_in;
+    if( (hv_in = (htnode *)calloc(1, sizeof(htnode))) ==NULL) exit(-1);
+    //内网包
+    htnode *hv;
+    if( (hv = (htnode *)calloc(1, sizeof(htnode))) ==NULL) exit(-1);
     switch(ip->protocol)
     {
       case 6:
-        hv->tcp = 1;
+        hv_in->tcp = 1; 
+        hv->tcp    = 1;
         break;
       case 17:
-        hv->udp = 1;
+        hv_in->udp = 1; 
+        hv->udp    = 1;
         break;
       case 1:
-        hv->icmp = 1;
+        hv_in->icmp = 1; 
+        hv->icmp    = 1;
         break;
       default:
-        hv->other = 1;
+        hv_in->other = 1; 
+        hv->other    = 1;
         break;
     }
-    //neiwang out
-    if ((ip->saddr & maskp) == netp && (ip->daddr & maskp) != netp){
+    if      ( ((ip->saddr & maskp)==netp) && ((ip->daddr & maskp)!=netp) ){ //出网包
+      //内网包
+      hv->ip = ip->daddr;
+      hashtable_insert(ht, HASHSIZE, hv);
+      //外网包
+      hv_in->ip = ip->saddr;
+      hashtable_insert(ht_in, HASHSIZEIN, hv_in);
+      flowtotal += tot_len;
+      packetnums++;
+    }else if( ((ip->daddr & maskp)==netp) && ((ip->saddr & maskp)!=netp) ){  //进网包
+      //内网包
+      hv->fbytes  = tot_len;
+      hv->fpacket = 1;
       hv->ip = ip->saddr;
-      hashtable_insert(ht, hv);
-    }else{
-      hv->ip = ip->saddr;
-      hashtable_insert(ht_in, hv);
+      hashtable_insert(ht, HASHSIZE, hv);
+      //外网包
+      hv_in->fbytes  = tot_len;
+      hv_in->fpacket = 1;
+      hv_in->ip = ip->daddr;
+      hashtable_insert(ht_in, HASHSIZEIN, hv_in);
+      flowtotal += tot_len;
+      packetnums++;
+    }else{  //广播包 不抓取
+      free(hv);
+      hv=NULL;
+      free(hv_in);
+      hv_in=NULL;
+      // hv->fbytes  = tot_len;
+      // hv->fpacket = 1;
+      // hv->ip = ip->saddr;
+      // hashtable_insert(ht, HASHSIZE, hv);
+
+      // hv_in->fbytes  = tot_len;
+      // hv_in->fpacket = 1;
+      // hv_in->ip = ip->daddr;
+      // hashtable_insert(ht_in, HASHSIZEIN, hv_in);
+      // flowtotal += tot_len;
+      // packetnums++;
     }
-    //printf("key: %x %x --> %x\n", netp, ip->saddr & maskp , ip->daddr & maskp);
   }
-  else if(ntohs (ethernet->ether_type) == ETHERTYPE_ARP){
-    // arp=(struct ether_arp*)(content+14);
-    // hv = (htnode *)malloc(sizeof(htnode));
-    // flowtotal  += 42;
-    // hv->bytes   = 42;
-    // hv->packets = 1;
-    // hv->tcp     = 0;
-    // hv->udp     = 0;
-    // hv->icmp    = 0;
-    // hv->arp     = 1;
-    // hv->other   = 0;
-    // struct in_addr addr;
-    // addr.s_addr = arp->arp_spa;
-    // printf("key: %s --> %d\n", inet_ntoa(addr), arp->arp_tpa);
-    //neiwang out
-    // if ((arp->arp_spa & maskp) == netp && (arp->arp_tpa & maskp) != netp){
-    //   hv->ip = arp->arp_spa;
-    //   hashtable_insert(ht, hv);
-    // }else{
-    //   hv->ip = arp->arp_spa;
-    //   hashtable_insert(ht_in, hv);
-    // }
-  }
-  packetnums++;
 }
 
-int hash(unsigned long long key ) {
-  return key % HASHSIZE;
+int hash(u_int32_t ip, int size) {
+  return ip % size;
 }
 
+htnode * hashtable_search(hashtable T, int size, u_int32_t ip){
+  htnode *p=T[hash(ip, size)];
+  while(p!=NULL && p->ip!=ip)
+    p=p->next;
+  return p;
+}
+
+int hashtable_insert(hashtable T, int size, htnode *s) {
+  int d;
+  htnode *p=hashtable_search(T, size, s->ip);
+  if(p!=NULL){
+    p->fbytes  += s->fbytes;
+    p->fpacket += s->fpacket;
+    p->bytes   += s->bytes;
+    p->packets += s->packets;
+    p->tcp     += s->tcp;
+    p->udp     += s->udp;
+    p->icmp    += s->icmp;
+    p->other   += s->other;
+    free(s);
+    s=NULL;
+  }else{
+    d=hash(s->ip, size);
+    s->next = T[d];
+    T[d]=s;
+  }
+}
+
+//哈希表初始化
 hashtable hashtable_init(int size){
   hashtable h;
-  h = (htnode * *)malloc(sizeof(htnode *)*size);
-  if(h == NULL) {
-    printf("Out of memory!\n");
-    exit(-1);
+  if( (h = (struct node **)calloc(size, sizeof(struct node*))) == NULL){
+    printf("Out of memory!\n"); exit(-1);
   }
-  int i;
-  for(i = 0; i < size; i++)
-  {
-    h[i] = (htnode *)malloc(sizeof(htnode));
-    if(h[i] == NULL){
-      printf("Out of memory!\n");
-      exit(-1);
-    }else{
-      h[i]->ip = i;
-      h[i]->next = NULL;
-    }
-  }
+  printf("init:%p\n", h);
+  // int i;
+  // for(i = 0; i < size; ++i)
+  // {
+  //   if( (h[i] = (struct node *)calloc(1, sizeof(struct node))) == NULL){
+  //     printf("Out of memory!\n"); exit(-1);
+  //   }
+  //   // else{
+  //   //   h[i]->ip = i;
+  //   //   h[i]->next = NULL;
+  //   // }
+  // }
   return h;
 }
 
-void hashtable_descrty(hashtable h){
-  int i;
+//哈希表销毁
+void hashtable_descrty(hashtable h,int size){
   // value *v;
-  // xvalue vs[1025];
+  // xvalue vs[400];
   // int sock,j;
   // struct sockaddr_in svraddr;
   // if((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0){ exit(1); }
   // svraddr.sin_family = AF_INET;
-  // svraddr.sin_port = htons(4100);
+  // svraddr.sin_port = htons(4200);
   // if(inet_pton(AF_INET, "127.0.0.1", &svraddr.sin_addr) < 0){ exit(1); }
   // if(connect(sock, (const struct sockaddr *)&svraddr, sizeof(svraddr)) < 0){ close(sock);return; }
   // memset(&vs[0], 0, sizeof(xvalue));
   // vs[0].v.other = 0;
   // vs[0].fbytes  = flowtotal;
   // vs[0].fpacket = packetnums;
-
-  for (i = 0; i < HASHSIZE; i++)
+  struct in_addr addr;
+  int i;
+  for (i = 0; i < size; i++)
   {
-    htnode *p;
+    htnode *p,*t;
     p = h[i];
+    if (p ==NULL ) continue;
     while(p->next != NULL){
-      h[i] = p->next;
+      //调试打印 hash表中的ip
+      // addr.s_addr = p->ip;
+      // printf("%s\n", inet_ntoa(addr));
+      t = p->next;
       // vs[j].v.sip     = p->ip;
       // vs[j].v.tcp     = p->tcp;
       // vs[j].v.udp     = p->udp;
@@ -242,37 +282,58 @@ void hashtable_descrty(hashtable h){
       // vs[j].fpacket   = p->packets;
       // j++;
       free(p);
-      p=h[i];
+      p=t;
     }
-    free(h[i]);
+    free(p);
+    p=NULL;
   }
-  free(h);
+  // free(h);
+  // h=NULL;
   // write(sock, vs, sizeof(xvalue) * j);
   // close(sock);
 }
 
-htnode * hashtable_search(hashtable T, unsigned long long key){
-  htnode *p=T[hash(key)];
-  while(p!=NULL && p->ip!=key)
-    p=p->next;
-  return p;
+int insert_top(hashtable T,htnode *p){
+  struct in_addr addr;
+  int i;
+  for (i = 0; i < 20; ++i)
+  {
+    if (T[i] != NULL){
+      if(p->bytes > T[i]->bytes){
+        addr.s_addr = p->ip;
+        printf("in %d:%s\n",i, inet_ntoa(addr));
+        T[i] = p;
+        return 0;
+      }
+    }else{
+      addr.s_addr = p->ip;
+      printf("in %d:%s-----\n",i, inet_ntoa(addr));
+      T[i] = p;
+      return 0;
+    }
+  }
+  return 1;
 }
 
-int hashtable_insert(hashtable T, htnode *s) {
-  int d;
-  htnode *p=hashtable_search(T,s->ip);
-  if(p!=NULL){
-    p->bytes   += s->bytes;
-    p->packets += s->packets;
-    p->tcp     += s->tcp;
-    p->udp     += s->udp;
-    p->icmp    += s->icmp;
-    p->arp     += s->arp;
-    p->other   += s->other;
-    free(s);
-  }else{
-    d=hash(s->ip);
-    s->next = T[d];
-    T[d]=s;
+hashtable hashtable_top(hashtable h,int size){
+  hashtable topht;
+  int i;
+  for (i = 0; i < size; ++i)
+  {
+    htnode *p;
+    p = h[i];
+    while(p->next != NULL){
+      h[i] = p->next;
+      if (insert_top(topht,p)){
+        free(p);
+        p=NULL;
+      }
+      p=h[i];
+    }
+    free(p);
+    p=NULL;
   }
+  free(h);
+  h=NULL;
+  return topht;
 }
