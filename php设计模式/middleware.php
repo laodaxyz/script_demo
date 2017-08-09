@@ -6,27 +6,41 @@ interface Middleware{
 
 class VerifyCsrfToken implements Middleware{
     public static function handle(Closure $next){
-        echo '验证VerifyCsrfToken'.'<br>';
+        echo '3=====验证csrf令牌====='.'<br>';
         $next();
+        echo '3=====添加csrf令牌====='.'<br>';
     }
 }
 class ShareErrorsFromSession implements Middleware{
     public static function handle(Closure $next){
-        echo '共享ShareErrorsFromSession'.'<br>';
+        echo '如果session中有error变量，则共享它'.'<br>';
         $next();
     }
 }
 class StartSession implements Middleware{
     public static function handle(Closure $next){
-        echo '+++start StartSession'.'<br>';
+        echo '2+++start 开启session'.'<br>';
         $next();
-        echo '+++end   StartSession'.'<br>';
+        echo '2+++end   关闭session，存储会话数据'.'<br>';
     }
 }
-class AddQueue implements Middleware{
+class AddQueuedCookieToResponse implements Middleware{
     public static function handle(Closure $next){
         $next();
-        echo '添加队列AddQueue'.'<br>';
+        echo '添加队列cookie到响应'.'<br>';
+    }
+}
+class EncryptCookies implements Middleware{
+    public static function handle(Closure $next){
+        echo '1===cookie解密处理==='.'<br>';
+        $next();
+        echo '1===cookie加密处理==='.'<br>';
+    }
+}
+class CheckForMaintenanceMode implements Middleware{
+    public static function handle(Closure $next){
+        echo '确定当前程序是否处于维护模式'.'<br>';
+        $next();
     }
 }
 function getSlice(){
@@ -38,17 +52,20 @@ function getSlice(){
 }
 function then(){
     $pipes = [
-        'AddQueue',
+        'CheckForMaintenanceMode',
+        'EncryptCookies',
+        'AddQueuedCookieToResponse',
         'StartSession',
         'ShareErrorsFromSession',
         'VerifyCsrfToken',
     ];
     $firstSlice = function (){
-        echo '请求想路由器传递，返回响应'.'<br>';
+        echo '[[[  请求想路由器传递，返回响应  ]]]'.'<br>';
     };
     $pipes = array_reverse($pipes);
-    call_user_func(
-        array_reduce($pipes, getSlice(), $firstSlice)
-    );
+    $call = array_reduce($pipes, getSlice(), $firstSlice);
+
+    //$call();
+    call_user_func($call);
 }
 then();
