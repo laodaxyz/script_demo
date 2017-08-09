@@ -1,0 +1,3 @@
+Thu, 29 Oct 2015 16:58:20 testlogging.py[line:16] DEBUG This is debug message
+Thu, 29 Oct 2015 16:58:20 testlogging.py[line:17] INFO This is info message
+Thu, 29 Oct 2015 16:58:20 testlogging.py[line:18] WARNING This is warning message

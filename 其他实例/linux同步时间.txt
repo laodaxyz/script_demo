@@ -1,0 +1,13 @@
+一、修改时区
+# cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+修改为中国的东八区
+# vi /etc/sysconfig/clock
+ZONE="Asia/Shanghai"
+UTC=false
+ARC=false
+
+二，用ntpdate从时间服务器更新时间
+安装ntp
+yum -y install ntp  
+同步时间
+ntpdate time.nist.gov
