@@ -1,0 +1,504 @@
+[root@localhost ~]# valgrind --tool=memcheck --leak-check=yes --show-reachable=yes ./sniffer
+==29743== Memcheck, a memory error detector
+==29743== Copyright (C) 2002-2012, and GNU GPL'd, by Julian Seward et al.
+==29743== Using Valgrind-3.8.1 and LibVEX; rerun with -h for copyright info
+==29743== Command: ./sniffer
+==29743== 
+devname:eth2---
+net 42.62.121.0 ,mask 255.255.255.0
+The PID of this process is 29743
+------------------------------------
+hashtable_init   !!!!!!
+hashtable_init!
+hashtable_init   !!!!!!
+hashtable_init!
+flowtotal : 20010501
+packetnums: 65086
+hashtable_init   !!!!!!
+hashtable_init!
+hashtable_init   !!!!!!
+hashtable_init!
+-------------------
+Wed Mar 16 12:43:46 2016
+
+flowtotal : 41767044
+packetnums: 56384
+hashtable_init   !!!!!!
+hashtable_init!
+hashtable_init   !!!!!!
+hashtable_init!
+-------------------
+Wed Mar 16 12:43:47 2016
+
+flowtotal : 62475235
+packetnums: 59561
+hashtable_init   !!!!!!
+hashtable_init!
+hashtable_init   !!!!!!
+hashtable_init!
+-------------------
+Wed Mar 16 12:43:48 2016
+
+flowtotal : 79384887
+packetnums: 59092
+hashtable_init   !!!!!!
+hashtable_init!
+hashtable_init   !!!!!!
+hashtable_init!
+-------------------
+Wed Mar 16 12:43:49 2016
+
+flowtotal : 97586445
+packetnums: 59416
+hashtable_init   !!!!!!
+hashtable_init!
+hashtable_init   !!!!!!
+hashtable_init!
+-------------------
+Wed Mar 16 12:43:50 2016
+
+flowtotal : 117023967
+packetnums: 59357
+hashtable_init   !!!!!!
+hashtable_init!
+hashtable_init   !!!!!!
+hashtable_init!
+-------------------
+Wed Mar 16 12:43:51 2016
+
+flowtotal : 139943984
+packetnums: 56705
+hashtable_init   !!!!!!
+hashtable_init!
+hashtable_init   !!!!!!
+hashtable_init!
+-------------------
+Wed Mar 16 12:43:52 2016
+
+flowtotal : 156271487
+packetnums: 59184
+hashtable_init   !!!!!!
+hashtable_init!
+hashtable_init   !!!!!!
+hashtable_init!
+-------------------
+Wed Mar 16 12:43:53 2016
+
+flowtotal : 173624734
+packetnums: 58646
+hashtable_init   !!!!!!
+hashtable_init!
+hashtable_init   !!!!!!
+hashtable_init!
+-------------------
+Wed Mar 16 12:43:54 2016
+
+flowtotal : 191084897
+packetnums: 56059
+hashtable_init   !!!!!!
+hashtable_init!
+hashtable_init   !!!!!!
+hashtable_init!
+-------------------
+Wed Mar 16 12:43:55 2016
+
+==29743== Invalid read of size 8
+==29743==    at 0x401477: hashtable_insert (sniffer.c:322)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743==  Address 0x5866918 is 24 bytes inside a block of size 80 free'd
+==29743==    at 0x4A063F0: free (vg_replace_malloc.c:446)
+==29743==    by 0x401213: hashtable_descrty (sniffer.c:261)
+==29743==    by 0x400CEB: handler (sniffer.c:104)
+==29743==    by 0x3A2E43291F: ??? (in /lib64/libc-2.12.so)
+==29743==    by 0x401463: hashtable_insert (sniffer.c:320)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== Invalid write of size 8
+==29743==    at 0x40148A: hashtable_insert (sniffer.c:322)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743==  Address 0x5866918 is 24 bytes inside a block of size 80 free'd
+==29743==    at 0x4A063F0: free (vg_replace_malloc.c:446)
+==29743==    by 0x401213: hashtable_descrty (sniffer.c:261)
+==29743==    by 0x400CEB: handler (sniffer.c:104)
+==29743==    by 0x3A2E43291F: ??? (in /lib64/libc-2.12.so)
+==29743==    by 0x401463: hashtable_insert (sniffer.c:320)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== Invalid read of size 8
+==29743==    at 0x401492: hashtable_insert (sniffer.c:323)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743==  Address 0x5866920 is 32 bytes inside a block of size 80 free'd
+==29743==    at 0x4A063F0: free (vg_replace_malloc.c:446)
+==29743==    by 0x401213: hashtable_descrty (sniffer.c:261)
+==29743==    by 0x400CEB: handler (sniffer.c:104)
+==29743==    by 0x3A2E43291F: ??? (in /lib64/libc-2.12.so)
+==29743==    by 0x401463: hashtable_insert (sniffer.c:320)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== Invalid write of size 8
+==29743==    at 0x4014A5: hashtable_insert (sniffer.c:323)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743==  Address 0x5866920 is 32 bytes inside a block of size 80 free'd
+==29743==    at 0x4A063F0: free (vg_replace_malloc.c:446)
+==29743==    by 0x401213: hashtable_descrty (sniffer.c:261)
+==29743==    by 0x400CEB: handler (sniffer.c:104)
+==29743==    by 0x3A2E43291F: ??? (in /lib64/libc-2.12.so)
+==29743==    by 0x401463: hashtable_insert (sniffer.c:320)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== Invalid read of size 8
+==29743==    at 0x4014AD: hashtable_insert (sniffer.c:324)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743==  Address 0x5866908 is 8 bytes inside a block of size 80 free'd
+==29743==    at 0x4A063F0: free (vg_replace_malloc.c:446)
+==29743==    by 0x401213: hashtable_descrty (sniffer.c:261)
+==29743==    by 0x400CEB: handler (sniffer.c:104)
+==29743==    by 0x3A2E43291F: ??? (in /lib64/libc-2.12.so)
+==29743==    by 0x401463: hashtable_insert (sniffer.c:320)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== Invalid write of size 8
+==29743==    at 0x4014C0: hashtable_insert (sniffer.c:324)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743==  Address 0x5866908 is 8 bytes inside a block of size 80 free'd
+==29743==    at 0x4A063F0: free (vg_replace_malloc.c:446)
+==29743==    by 0x401213: hashtable_descrty (sniffer.c:261)
+==29743==    by 0x400CEB: handler (sniffer.c:104)
+==29743==    by 0x3A2E43291F: ??? (in /lib64/libc-2.12.so)
+==29743==    by 0x401463: hashtable_insert (sniffer.c:320)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== Invalid read of size 8
+==29743==    at 0x4014C8: hashtable_insert (sniffer.c:325)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743==  Address 0x5866910 is 16 bytes inside a block of size 80 free'd
+==29743==    at 0x4A063F0: free (vg_replace_malloc.c:446)
+==29743==    by 0x401213: hashtable_descrty (sniffer.c:261)
+==29743==    by 0x400CEB: handler (sniffer.c:104)
+==29743==    by 0x3A2E43291F: ??? (in /lib64/libc-2.12.so)
+==29743==    by 0x401463: hashtable_insert (sniffer.c:320)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== Invalid write of size 8
+==29743==    at 0x4014DB: hashtable_insert (sniffer.c:325)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743==  Address 0x5866910 is 16 bytes inside a block of size 80 free'd
+==29743==    at 0x4A063F0: free (vg_replace_malloc.c:446)
+==29743==    by 0x401213: hashtable_descrty (sniffer.c:261)
+==29743==    by 0x400CEB: handler (sniffer.c:104)
+==29743==    by 0x3A2E43291F: ??? (in /lib64/libc-2.12.so)
+==29743==    by 0x401463: hashtable_insert (sniffer.c:320)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== Invalid read of size 8
+==29743==    at 0x4014E3: hashtable_insert (sniffer.c:326)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743==  Address 0x5866928 is 40 bytes inside a block of size 80 free'd
+==29743==    at 0x4A063F0: free (vg_replace_malloc.c:446)
+==29743==    by 0x401213: hashtable_descrty (sniffer.c:261)
+==29743==    by 0x400CEB: handler (sniffer.c:104)
+==29743==    by 0x3A2E43291F: ??? (in /lib64/libc-2.12.so)
+==29743==    by 0x401463: hashtable_insert (sniffer.c:320)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== Invalid write of size 8
+==29743==    at 0x4014F6: hashtable_insert (sniffer.c:326)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743==  Address 0x5866928 is 40 bytes inside a block of size 80 free'd
+==29743==    at 0x4A063F0: free (vg_replace_malloc.c:446)
+==29743==    by 0x401213: hashtable_descrty (sniffer.c:261)
+==29743==    by 0x400CEB: handler (sniffer.c:104)
+==29743==    by 0x3A2E43291F: ??? (in /lib64/libc-2.12.so)
+==29743==    by 0x401463: hashtable_insert (sniffer.c:320)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== Invalid read of size 8
+==29743==    at 0x4014FE: hashtable_insert (sniffer.c:327)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743==  Address 0x5866930 is 48 bytes inside a block of size 80 free'd
+==29743==    at 0x4A063F0: free (vg_replace_malloc.c:446)
+==29743==    by 0x401213: hashtable_descrty (sniffer.c:261)
+==29743==    by 0x400CEB: handler (sniffer.c:104)
+==29743==    by 0x3A2E43291F: ??? (in /lib64/libc-2.12.so)
+==29743==    by 0x401463: hashtable_insert (sniffer.c:320)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== Invalid write of size 8
+==29743==    at 0x401511: hashtable_insert (sniffer.c:327)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743==  Address 0x5866930 is 48 bytes inside a block of size 80 free'd
+==29743==    at 0x4A063F0: free (vg_replace_malloc.c:446)
+==29743==    by 0x401213: hashtable_descrty (sniffer.c:261)
+==29743==    by 0x400CEB: handler (sniffer.c:104)
+==29743==    by 0x3A2E43291F: ??? (in /lib64/libc-2.12.so)
+==29743==    by 0x401463: hashtable_insert (sniffer.c:320)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== Invalid read of size 8
+==29743==    at 0x401519: hashtable_insert (sniffer.c:328)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743==  Address 0x5866938 is 56 bytes inside a block of size 80 free'd
+==29743==    at 0x4A063F0: free (vg_replace_malloc.c:446)
+==29743==    by 0x401213: hashtable_descrty (sniffer.c:261)
+==29743==    by 0x400CEB: handler (sniffer.c:104)
+==29743==    by 0x3A2E43291F: ??? (in /lib64/libc-2.12.so)
+==29743==    by 0x401463: hashtable_insert (sniffer.c:320)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== Invalid write of size 8
+==29743==    at 0x40152C: hashtable_insert (sniffer.c:328)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743==  Address 0x5866938 is 56 bytes inside a block of size 80 free'd
+==29743==    at 0x4A063F0: free (vg_replace_malloc.c:446)
+==29743==    by 0x401213: hashtable_descrty (sniffer.c:261)
+==29743==    by 0x400CEB: handler (sniffer.c:104)
+==29743==    by 0x3A2E43291F: ??? (in /lib64/libc-2.12.so)
+==29743==    by 0x401463: hashtable_insert (sniffer.c:320)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== Invalid read of size 8
+==29743==    at 0x401534: hashtable_insert (sniffer.c:329)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743==  Address 0x5866940 is 64 bytes inside a block of size 80 free'd
+==29743==    at 0x4A063F0: free (vg_replace_malloc.c:446)
+==29743==    by 0x401213: hashtable_descrty (sniffer.c:261)
+==29743==    by 0x400CEB: handler (sniffer.c:104)
+==29743==    by 0x3A2E43291F: ??? (in /lib64/libc-2.12.so)
+==29743==    by 0x401463: hashtable_insert (sniffer.c:320)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== Invalid write of size 8
+==29743==    at 0x401547: hashtable_insert (sniffer.c:329)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743==  Address 0x5866940 is 64 bytes inside a block of size 80 free'd
+==29743==    at 0x4A063F0: free (vg_replace_malloc.c:446)
+==29743==    by 0x401213: hashtable_descrty (sniffer.c:261)
+==29743==    by 0x400CEB: handler (sniffer.c:104)
+==29743==    by 0x3A2E43291F: ??? (in /lib64/libc-2.12.so)
+==29743==    by 0x401463: hashtable_insert (sniffer.c:320)
+==29743==    by 0x400F5A: callPacket (sniffer.c:173)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+flowtotal : 201475267
+packetnums: 35138
+hashtable_init   !!!!!!
+hashtable_init!
+hashtable_init   !!!!!!
+hashtable_init!
+-------------------
+Wed Mar 16 12:43:56 2016
+
+flowtotal : 215847295
+packetnums: 58689
+hashtable_init   !!!!!!
+hashtable_init!
+hashtable_init   !!!!!!
+hashtable_init!
+-------------------
+Wed Mar 16 12:43:57 2016
+
+^C==29743== 
+==29743== HEAP SUMMARY:
+==29743==     in use at exit: 2,321,969 bytes in 26,201 blocks
+==29743==   total heap usage: 1,715,961 allocs, 1,689,760 frees, 139,421,730 bytes allocated
+==29743== 
+==29743== 5 bytes in 1 blocks are still reachable in loss record 1 of 12
+==29743==    at 0x4A069EE: malloc (vg_replace_malloc.c:270)
+==29743==    by 0x3A2E481041: strdup (in /lib64/libc-2.12.so)
+==29743==    by 0x3A2F40D5F8: pcap_create_common (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F406E09: pcap_create (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D488: pcap_open_live (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400AFF: main (sniffer.c:70)
+==29743== 
+==29743== 5 bytes in 1 blocks are still reachable in loss record 2 of 12
+==29743==    at 0x4A069EE: malloc (vg_replace_malloc.c:270)
+==29743==    by 0x3A2E481041: strdup (in /lib64/libc-2.12.so)
+==29743==    by 0x3A2F409E47: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40CDE6: pcap_activate (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D4CC: pcap_open_live (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400AFF: main (sniffer.c:70)
+==29743== 
+==29743== 8 bytes in 1 blocks are still reachable in loss record 3 of 12
+==29743==    at 0x4A069EE: malloc (vg_replace_malloc.c:270)
+==29743==    by 0x3A2F4070A2: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F408EFD: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F409F16: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40CDE6: pcap_activate (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D4CC: pcap_open_live (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400AFF: main (sniffer.c:70)
+==29743== 
+==29743== 248 bytes in 1 blocks are still reachable in loss record 4 of 12
+==29743==    at 0x4A069EE: malloc (vg_replace_malloc.c:270)
+==29743==    by 0x3A2F40A211: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40CDE6: pcap_activate (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D4CC: pcap_open_live (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400AFF: main (sniffer.c:70)
+==29743== 
+==29743== 728 bytes in 1 blocks are still reachable in loss record 5 of 12
+==29743==    at 0x4A069EE: malloc (vg_replace_malloc.c:270)
+==29743==    by 0x3A2F40D5C3: pcap_create_common (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F406E09: pcap_create (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D488: pcap_open_live (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400AFF: main (sniffer.c:70)
+==29743== 
+==29743== 2,320 bytes in 29 blocks are still reachable in loss record 6 of 12
+==29743==    at 0x4A069EE: malloc (vg_replace_malloc.c:270)
+==29743==    by 0x400D87: callPacket (sniffer.c:128)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== 65,535 bytes in 1 blocks are still reachable in loss record 7 of 12
+==29743==    at 0x4A069EE: malloc (vg_replace_malloc.c:270)
+==29743==    by 0x3A2F409F2B: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40CDE6: pcap_activate (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D4CC: pcap_open_live (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400AFF: main (sniffer.c:70)
+==29743== 
+==29743== 80,000 bytes in 1 blocks are still reachable in loss record 8 of 12
+==29743==    at 0x4A069EE: malloc (vg_replace_malloc.c:270)
+==29743==    by 0x401112: hashtable_init (sniffer.c:207)
+==29743==    by 0x400CBD: handler (sniffer.c:101)
+==29743==    by 0x3A2E43291F: ??? (in /lib64/libc-2.12.so)
+==29743==    by 0x3A2F407C1A: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== 80,000 bytes in 1 blocks are still reachable in loss record 9 of 12
+==29743==    at 0x4A069EE: malloc (vg_replace_malloc.c:270)
+==29743==    by 0x401112: hashtable_init (sniffer.c:207)
+==29743==    by 0x400CCE: handler (sniffer.c:102)
+==29743==    by 0x3A2E43291F: ??? (in /lib64/libc-2.12.so)
+==29743==    by 0x3A2F407C1A: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== 493,120 bytes in 6,164 blocks are still reachable in loss record 10 of 12
+==29743==    at 0x4A069EE: malloc (vg_replace_malloc.c:270)
+==29743==    by 0x400DA6: callPacket (sniffer.c:132)
+==29743==    by 0x3A2F407BE1: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== 800,000 bytes in 10,000 blocks are still reachable in loss record 11 of 12
+==29743==    at 0x4A069EE: malloc (vg_replace_malloc.c:270)
+==29743==    by 0x40115E: hashtable_init (sniffer.c:215)
+==29743==    by 0x400CBD: handler (sniffer.c:101)
+==29743==    by 0x3A2E43291F: ??? (in /lib64/libc-2.12.so)
+==29743==    by 0x3A2F407C1A: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== 800,000 bytes in 10,000 blocks are still reachable in loss record 12 of 12
+==29743==    at 0x4A069EE: malloc (vg_replace_malloc.c:270)
+==29743==    by 0x40115E: hashtable_init (sniffer.c:215)
+==29743==    by 0x400CCE: handler (sniffer.c:102)
+==29743==    by 0x3A2E43291F: ??? (in /lib64/libc-2.12.so)
+==29743==    by 0x3A2F407C1A: ??? (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x3A2F40D3B0: pcap_loop (in /usr/lib64/libpcap.so.1.0.0)
+==29743==    by 0x400C23: main (sniffer.c:87)
+==29743== 
+==29743== LEAK SUMMARY:
+==29743==    definitely lost: 0 bytes in 0 blocks
+==29743==    indirectly lost: 0 bytes in 0 blocks
+==29743==      possibly lost: 0 bytes in 0 blocks
+==29743==    still reachable: 2,321,969 bytes in 26,201 blocks
+==29743==         suppressed: 0 bytes in 0 blocks
+==29743== 
+==29743== For counts of detected and suppressed errors, rerun with: -v
+==29743== ERROR SUMMARY: 16 errors from 16 contexts (suppressed: 6 from 6)

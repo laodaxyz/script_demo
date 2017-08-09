@@ -15,7 +15,7 @@
 #include "/usr/local/mysql/include/mysql/mysql.h"
 
 #define NUM 1025
-#define PORT 4100
+#define PORT 4200
 
 #define MY_HOST "115.182.1.175"
 #define MY_USER "sniffer"
@@ -24,19 +24,18 @@
 #define MY_SOCK "/tmp/mysql.sock"
 
 typedef struct value{
-	u_int32_t sip;
-	unsigned int packets;
-	unsigned int tcp;
-	unsigned int udp;
-	unsigned int icmp;
-	unsigned int other;
-	unsigned long  bytes;
+  u_int32_t sip;
+  unsigned long long packets;
+  unsigned long long tcp;
+  unsigned long long udp;
+  unsigned long long icmp;
+  unsigned long long other;
+  unsigned long long bytes;
 }value;
-
 typedef struct{
-	value v;
-	unsigned int fpacket;
-	unsigned long  fbytes;
+  value v;
+  unsigned long long fpacket;
+  unsigned long long fbytes;
 }xvalue;
 
 ssize_t Read(int fd, char *vptr, size_t n)
@@ -62,7 +61,6 @@ ssize_t Read(int fd, char *vptr, size_t n)
 		ptr += nread;
 	}
 	return(n - nleft);
-
 }
 
 char *getcurtime(void){
@@ -108,16 +106,14 @@ void work(void)
 	mysql_init(&my_conn);
 	if ( ! mysql_real_connect(&my_conn, MY_HOST, MY_USER, MY_PASS, MY_DB, 3309, MY_SOCK,0))
 	{
-		syslog(LOG_ERR, "Connection error %d: %s\n", mysql_errno(&my_conn), mysql_error(&my_conn));
-		exit(2);
+		syslog(LOG_ERR, "Connection error %d: %s\n", mysql_errno(&my_conn), mysql_error(&my_conn)); exit(2);
 	}
 
 	sigemptyset(&zeromask);
 
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (listenfd == -1){
-		syslog(LOG_ERR, "socket: %s", strerror(errno));
-		exit(1);
+		syslog(LOG_ERR, "socket: %s", strerror(errno)); exit(1);
 	}
 
 	servaddr.sin_family = AF_INET;
@@ -125,14 +121,12 @@ void work(void)
 	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if (bind(listenfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0){
-		syslog(LOG_ERR, "bind: %s", strerror(errno));
-		exit(1);
+		syslog(LOG_ERR, "bind: %s", strerror(errno)); exit(1);
 	}
 
 	id = 1;
 	if ((setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &id, sizeof(int))) < 0){
-		syslog(LOG_ERR, "setsockopt: %s", strerror(errno));
-		exit(1);
+		syslog(LOG_ERR, "setsockopt: %s", strerror(errno)); exit(1);
 	}
 
 	maxfd = listenfd;
@@ -176,7 +170,6 @@ void work(void)
 		{
 			if (client[i] < 0)
 				continue;
-
 			if (FD_ISSET(client[i], &rset)){
 				socklen = sizeof(clientaddr);
 				if (getpeername(client[i], &clientaddr, &socklen) >= 0)
@@ -226,14 +219,15 @@ void work(void)
 							continue;
 						}
 						if ((time = getcurtime()) == NULL){
-							syslog(LOG_ERR, "Get cur time error");
-							exit(3);
+							syslog(LOG_ERR, "Get cur time error"); exit(3);
 						}
 
 						if (ret[0].v.other == 0){
 							if (j == 0)
 								snprintf(sql, sizeof(sql), "insert into external(svr_id, sip, packs, bytes, updatetime) values(%u, \"0.0.0.0\", %u, %lu, \"%s\")",
 										id, ret[0].fpacket, ret[0].fbytes, time);
+								//snprintf(sql, sizeof(sql), "insert into external(svr_id, sip, packs, fpacks, rpacks, updatetime, bytes, rbytes, fbytes) values(%u, \"0.0.0.0\", %u, %u, %u, \"%s\", %lu, %lu, %lu)",
+								//	                                             id, sip, ret[j].v.packets, ret[j].fpacket, ret[j].v.packets-ret[j].fpacket, time, ret[j].v.bytes, ret[j].v.bytes-ret[j].fbytes, ret[j].fbytes);
 							else
 								snprintf(sql, sizeof(sql), "insert into external(svr_id, sip, packs, fpacks, rpacks, tcp, udp, icmp, other, updatetime, bytes, rbytes, fbytes) values(%u, \"%s\", %u, %u, %u, %u, %u, %u, %u, \"%s\", %lu, %lu, %lu)",
 									id, sip, ret[j].v.packets, ret[j].fpacket, ret[j].v.packets - ret[j].fpacket, ret[j].v.tcp, ret[j].v.udp, ret[j].v.icmp, ret[j].v.other, time, ret[j].v.bytes, ret[j].v.bytes - ret[j].fbytes, ret[j].fbytes);
@@ -242,6 +236,8 @@ void work(void)
 							if (j == 0)
 								snprintf(sql, sizeof(sql), "insert into internal(svr_id, sip, packs, bytes, updatetime) values(%u, \"0.0.0.0\", %u, %lu, \"%s\")",
 										id, ret[0].fpacket, ret[0].fbytes, time);
+								//snprintf(sql, sizeof(sql), "insert into internal(svr_id, sip, packs, fpacks, rpacks, updatetime, bytes, rbytes, fbytes) values(%u, \"0.0.0.0\", %u, %u, %u, \"%s\", %lu, %lu, %lu)",
+								//	                                             id, sip, ret[j].v.packets, ret[j].fpacket, ret[j].v.packets-ret[j].fpacket, time, ret[j].v.bytes, ret[j].v.bytes-ret[j].fbytes, ret[j].fbytes);
 							else
 								snprintf(sql, sizeof(sql), "insert into internal(svr_id, sip, packs, fpacks, rpacks, tcp, udp, icmp, other, updatetime, mth, bytes, rbytes, fbytes) values(%u, \"%s\", %u, %u, %u, %u, %u, %u, %u, \"%s\", \"%s\", %lu, %lu, %lu)",
 									id, sip, ret[j].v.packets, ret[j].fpacket, ret[j].v.packets - ret[j].fpacket, ret[j].v.tcp, ret[j].v.udp, ret[j].v.icmp, ret[j].v.other, time, &time[17], ret[j].v.bytes, ret[j].v.bytes - ret[j].fbytes, ret[j].fbytes);
@@ -249,10 +245,8 @@ void work(void)
 						free(time);
 						//syslog(LOG_NOTICE, sql);
 						if (mysql_query(&my_conn, sql)){
-							syslog(LOG_ERR, "Mysql query error %d: %s", mysql_errno(&my_conn), mysql_error(&my_conn));
-							exit(2);
+							syslog(LOG_ERR, "Mysql query error %d: %s", mysql_errno(&my_conn), mysql_error(&my_conn)); exit(2);
 						}
-
 					}
 				}
 				if (--nready <= 0)
@@ -260,7 +254,6 @@ void work(void)
 			}
 		}
 	}
-
 	mysql_close(&my_conn);
 }
 
@@ -268,40 +261,24 @@ int main(void)
 {
 	pid_t mypid1, mypid2;
 	int n;
-
 	openlog("sniffersvr",LOG_PID, LOG_LOCAL7);
 	umask(0);
 	if ((mypid1 = fork()) == -1){
-		syslog(LOG_ERR, "fork: %s", strerror(errno));
-		exit(1);
+		syslog(LOG_ERR, "fork: %s", strerror(errno)); exit(1);
 	}
-	if (mypid1 > 0)
-		exit(0);
-
+	if (mypid1 > 0) exit(0);
 	setsid();
-
 	signal(SIGHUP, SIG_IGN);
 	if ((mypid2 = fork()) == -1){
-		syslog(LOG_ERR, "fork: %s", strerror(errno));
-		exit(1);
+		syslog(LOG_ERR, "fork: %s", strerror(errno)); exit(1);
 	}
-
-	if (mypid2 > 0)
-		exit(0);
-
+	if (mypid2 > 0) exit(0);
 	chdir("/");
-
 	for(n = 0; n < 1025; n++)
 		close(n);
-
 	open("/dev/null", O_RDWR);
-	dup(0);
-	dup(0);
-
+	dup(0); dup(0);
 	work();
-
 	closelog();
-
 	return 0;
-	}
-
+}

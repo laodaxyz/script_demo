@@ -106,25 +106,23 @@ hashtable hashtable_top(hashtable h,int size){
 		{
 			while(p->next != NULL){
 				h[i] = p->next;
-				int ti;
-				if(header.count==0){
-					p->next = NULL;
-					header.next = p;
-				}esle{
-					tp = header.next;
-					for (int ti = 0; ti < header.count; ++ti)
-					{
-
-						if(p->bytes < tp->bytes){
-							if (header.count ==20){
-								tp->next=p;
-							}esle{
-								tp->next=p;
-							}
-							
-						}
-					}
-				}
+				// int ti;
+				// if(header.count==0){
+				// 	p->next = NULL;
+				// 	header.next = p;
+				// }esle{
+				// 	tp = header.next;
+				// 	for (int ti = 0; ti < header.count; ++ti)
+				// 	{
+				// 		if(p->bytes < tp->bytes){
+				// 			if (header.count ==20){
+				// 				tp->next=p;
+				// 			}esle{
+				// 				tp->next=p;
+				// 			}
+				// 		}
+				// 	}
+				// }
 				
 				free(p);
 				p = h[i];
@@ -142,8 +140,9 @@ void call(){
 	{
 		htnode *hv;
 		hv = (htnode *)malloc(sizeof(htnode));
-		hv->ip    =i;
-		hv->tcp   =i+2;
+		// hv->ip    =i;
+		// hv->tcp   =i+2;
+		hv = {0,2,0,0};
 		hashtable_insert(ht,hv);
 	}
 	hashtable oldht,topht;

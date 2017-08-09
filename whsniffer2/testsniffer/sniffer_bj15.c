@@ -52,7 +52,7 @@ typedef struct node{
 }htnode;
 typedef htnode **hashtable;
 unsigned  long long in_bytes, in_packets, out_bytes, out_packets=0;
-bpf_u_int32 netp,netp2,maskp;
+bpf_u_int32 netp,maskp;
 hashtable ht,ht_out;
 pthread_mutex_t hash_lock;
 pthread_attr_t attr;
@@ -116,7 +116,7 @@ void hashtable_descrty(hashtable h, int size, int in_out){
   int i;
   for (i = 0; i < size; i++)
   {
-    if (j>=max) break; 
+    if (j>=max) break;
     htnode *p,*t;
     p = h[i];
     if (p ==NULL ) continue;
@@ -211,118 +211,107 @@ hashtable hashtable_top(hashtable h, int size, int newsize){
   return topht;
 }
 
-void *th_works(void *devname){
-  char errBuf[PCAP_ERRBUF_SIZE],sip[20],dip[20];
-  int ret=0;
-  struct pcap_pkthdr *packhdr;
-  const u_char *pkt_data;
-
+void callPacket(u_char *arg, const struct pcap_pkthdr* pack, const u_char *content)  
+{
   struct ether_header *ethernet;
   struct iphdr *ip;
-  struct in_addr addr;
-  
-  pcap_t *device = pcap_open_live(devname, 65535, 1, 0, errBuf);
-  //pcap_loop(device, -1, callPacket, NULL);
-  for (;;)
+  ethernet=(struct ether_header *)content;
+  //ip
+  if(ntohs(ethernet->ether_type)==ETHERTYPE_IP)
   {
-    if ((ret = pcap_next_ex(device, &packhdr,&pkt_data)) < 0){
-        syslog(LOG_ERR, "Can't get packet: %s", pcap_geterr(device));
-        pthread_exit((void *)1);
-    }
-
-    ethernet=(struct ether_header *)pkt_data;
-
-    if(ntohs(ethernet->ether_type)==ETHERTYPE_IP)
+    ip=(struct iphdr*)(content+14);
+    int tot_len=ntohs(ip->tot_len) + 18;
+    //外网包
+    htnode *hv_out;
+    if( (hv_out = (struct node*)calloc(1, sizeof(struct node))) ==NULL) exit(-1);
+    hv_out->bytes = tot_len;
+    hv_out->packets = 1;
+    //内网包
+    htnode *hv;
+    if( (hv    = (struct node*)calloc(1, sizeof(struct node))) ==NULL) exit(-1);
+    hv->bytes = tot_len;
+    hv->packets = 1;
+    switch(ip->protocol)
     {
-        ip=(struct iphdr*)(pkt_data+14);
-    	int tot_len=ntohs(ip->tot_len) + 18;
-      	//外网包
-	    htnode *hv_out;
-	    if( (hv_out = (struct node*)calloc(1, sizeof(struct node))) ==NULL) exit(-1);
-	    hv_out->bytes = tot_len;
-	    hv_out->packets = 1;
-	    //内网包
-	    htnode *hv;
-	    if( (hv    = (struct node*)calloc(1, sizeof(struct node))) ==NULL) exit(-1);
-	    hv->bytes = tot_len;
-	    hv->packets = 1;
-	    switch(ip->protocol)
-	    {
-			case 6:
-			    hv_out->tcp = 1; 
-			    hv->tcp     = 1;
-			    break;
-			case 17:
-			hv_out->udp = 1; 
-			hv->udp     = 1;
-			break;
-			case 1:
-			hv_out->icmp = 1; 
-			hv->icmp     = 1;
-			break;
-			default:
-			hv_out->other = 1; 
-			hv->other     = 1;
-			break;
-	    }
-	    if      ( (((ip->saddr & maskp)==netp)  && ((ip->daddr & maskp)!=netp)) ||
-		      (((ip->saddr & maskp)==netp2) && ((ip->daddr & maskp)!=netp2)) ){ //出网包
-	      //内网ip
-	      hv->ip = ip->saddr;
-	      pthread_mutex_lock(&hash_lock);
-	      hashtable_insert(ht, HASHSIZE, hv);
-	      pthread_mutex_unlock(&hash_lock);
-	      //外网ip
-	      hv_out->ip = ip->daddr;
-	      pthread_mutex_lock(&hash_lock);
-	      hashtable_insert(ht_out, HASHSIZEIN, hv_out);
-	      pthread_mutex_unlock(&hash_lock);
-	      out_bytes += tot_len;
-	      out_packets++;
-	    }else if( (((ip->daddr & maskp)==netp)  && ((ip->saddr & maskp)!=netp)) ||
-		      (((ip->daddr & maskp)==netp2) && ((ip->saddr & maskp)!=netp2)) ){  //进网包
-	      //内网ip
-	      hv->fbytes  = tot_len;
-	      hv->fpacket = 1;
-	      hv->ip = ip->daddr;
-	      pthread_mutex_lock(&hash_lock);
-	      hashtable_insert(ht, HASHSIZE, hv);
-	      pthread_mutex_unlock(&hash_lock);
-	      //外网ip
-	      hv_out->fbytes  = tot_len;
-	      hv_out->fpacket = 1;
-	      hv_out->ip = ip->saddr;
-	      pthread_mutex_lock(&hash_lock);
-	      hashtable_insert(ht_out, HASHSIZEIN, hv_out);
-	      pthread_mutex_unlock(&hash_lock);
-	      in_bytes += tot_len;
-	      in_packets++;
-	    }else if( (((ip->daddr & maskp)==netp)  && ((ip->saddr & maskp)==netp)) ||
-		      (((ip->daddr & maskp)==netp2) && ((ip->saddr & maskp)==netp2)) || ((ip->saddr == 0) || (ip->daddr == -1)) ){ //内网广播包
-	      free(hv);
-	      hv=NULL;
-	      free(hv_out);
-	      hv_out=NULL;
-	      in_bytes += tot_len;
-	      in_packets++;
-	    }else{  //外网包
-	      //内网ip
-	      hv->ip = ip->saddr;
-	      pthread_mutex_lock(&hash_lock);
-	      hashtable_insert(ht, HASHSIZE, hv);
-	      pthread_mutex_unlock(&hash_lock);
-	      //外网ip不统计
-	      free(hv_out);
-	      hv_out=NULL;
-
-	      out_bytes += tot_len;
-	      out_packets++;
-	    }
-
+      case 6:
+        hv_out->tcp = 1; 
+        hv->tcp    = 1;
+        break;
+      case 17:
+        hv_out->udp = 1; 
+        hv->udp    = 1;
+        break;
+      case 1:
+        hv_out->icmp = 1; 
+        hv->icmp    = 1;
+        break;
+      default:
+        hv_out->other = 1; 
+        hv->other    = 1;
+        break;
     }
-
+    if      ( ((ip->saddr & maskp)==netp) && ((ip->daddr & maskp)!=netp) ){ //出网包
+      //内网ip
+      hv->ip = ip->saddr;
+      pthread_mutex_lock(&hash_lock);
+      hashtable_insert(ht, HASHSIZE, hv);
+      pthread_mutex_unlock(&hash_lock);
+      //外网ip
+      hv_out->ip = ip->daddr;
+      pthread_mutex_lock(&hash_lock);
+      hashtable_insert(ht_out, HASHSIZEIN, hv_out);
+      pthread_mutex_unlock(&hash_lock);
+      out_bytes += tot_len;
+      out_packets++;
+    }else if( ((ip->daddr & maskp)==netp) && ((ip->saddr & maskp)!=netp) ){  //进网包
+      //内网ip
+      hv->fbytes  = tot_len;
+      hv->fpacket = 1;
+      hv->ip = ip->daddr;
+      pthread_mutex_lock(&hash_lock);
+      hashtable_insert(ht, HASHSIZE, hv);
+      pthread_mutex_unlock(&hash_lock);
+      //外网ip
+      hv_out->fbytes  = tot_len;
+      hv_out->fpacket = 1;
+      hv_out->ip = ip->saddr;
+      pthread_mutex_lock(&hash_lock);
+      hashtable_insert(ht_out, HASHSIZEIN, hv_out);
+      pthread_mutex_unlock(&hash_lock);
+      in_bytes += tot_len;
+      in_packets++;
+    }else if( (((ip->daddr & maskp)==netp) && ((ip->saddr & maskp)==netp)) || ((ip->saddr == 0) || (ip->daddr == -1))){ //内网广播包
+      free(hv);
+      hv=NULL;
+      free(hv_out);
+      hv_out=NULL;
+      in_bytes += tot_len;
+      in_packets++;
+    }else{  //外网包
+      //内网ip
+      hv->ip = ip->saddr;
+      pthread_mutex_lock(&hash_lock);
+      hashtable_insert(ht, HASHSIZE, hv);
+      pthread_mutex_unlock(&hash_lock);
+      // free(hv);
+      // hv=NULL;
+      free(hv_out);
+      hv_out=NULL;
+      out_bytes += tot_len;
+      out_packets++;
+    }
   }
+  // else if(ntohs (ethernet->ether_type) == ETHERTYPE_ARP) {
+  //     in_bytes += 60;
+  //     in_packets++;
+  // }
+}
 
+void *th_works(void *devname){
+  char errBuf[PCAP_ERRBUF_SIZE];
+  pcap_t *device = pcap_open_live(devname, 65535, 1, 0, errBuf);
+  pcap_loop(device, -1, callPacket, NULL);
+  pcap_close(device);
 }
 
 void th_sigs(){
@@ -340,13 +329,13 @@ void th_sigs(){
         if((ht     = (struct node **)calloc(HASHSIZE,   sizeof(struct node*))) == NULL) exit(-1);
         if((ht_out = (struct node **)calloc(HASHSIZEIN, sizeof(struct node*))) == NULL) exit(-1);
         alarm(300);
-        printf("in_bytes:%lld in_packets:%lld out_bytes:%lld out_packets:%lld\n", in_bytes, in_packets, out_bytes, out_packets);
-        //syslog(LOG_NOTICE, "in_bytes:%llu in_packets:%llu out_bytes:%llu out_packets:%llu", in_bytes, in_packets, out_bytes, out_packets);
+        //printf("in_bytes:%lld in_packets:%lld out_bytes:%lld out_packets:%lld\n", in_bytes, in_packets, out_bytes, out_packets);
+        syslog(LOG_NOTICE, "in_bytes:%llu in_packets:%llu out_bytes:%llu out_packets:%llu", in_bytes, in_packets, out_bytes, out_packets);
         //内网ip
-        //hashtable_descrty(oldht, HASHSIZE, 1);
+        hashtable_descrty(oldht, HASHSIZE, 1);
         //外网ip排序，取前20
-        //topht_out = hashtable_top(oldht_out, HASHSIZEIN, 20);
-        //hashtable_descrty(topht_out, 20, 0);
+        topht_out = hashtable_top(oldht_out, HASHSIZEIN, 20);
+        hashtable_descrty(topht_out, 20, 0);
         in_bytes=0; in_packets=0; out_bytes=0; out_packets=0;
         break;
       default:
@@ -354,11 +343,14 @@ void th_sigs(){
     }
   }
 }
-
+void myexit(void){
+  pthread_mutex_destroy(&hash_lock);
+  pthread_attr_destroy(&attr);
+}
 void Daemon(void){
     pid_t mypid1, mypid2;
     u_short n = 0;
-    openlog("sniffer",LOG_PID, LOG_LOCAL7);
+    openlog("sniffer3",LOG_PID, LOG_LOCAL7);
     umask(0);
     if ((mypid1 = fork()) == -1)
         {syslog(LOG_ERR, "fork: %s", strerror(errno));exit(1);}
@@ -376,49 +368,44 @@ void Daemon(void){
 }
 
 int main(){
-  //Daemon();
-  char errBuf[PCAP_ERRBUF_SIZE], *devname, *devname2;
+  Daemon();
+  char errBuf[PCAP_ERRBUF_SIZE], *devname;
   //devname = pcap_lookupdev(errBuf);
-  devname  = "eth2";
-  netp2 = 8011306;
+  devname = "eth2";
   
-  char net[20],net2[20],mask[20];
+  char net[20],mask[20];
   struct in_addr addr;
-  pcap_lookupnet(devname, &netp, &maskp, errBuf);
+  int ret,perr;
+  ret = pcap_lookupnet(devname, &netp, &maskp, errBuf);
   addr.s_addr = netp;
   strcpy(net,inet_ntoa(addr));
   addr.s_addr = maskp;
   strcpy(mask,inet_ntoa(addr));
-  addr.s_addr = netp2;
-  strcpy(net2,inet_ntoa(addr));
-  printf("devname:%s ,net:%s ,net2:%s ,mask:%s . The PID is %d", devname, net, net2, mask, getpid());
-  //syslog(LOG_NOTICE, "devname:%s ,net:%s ,net2:%s ,mask:%s . The PID is %d", devname, net, net2, mask, getpid());
-  
+  //printf("net %s ,mask %s ..The PID is %d\n",net, mask, getpid());
+  syslog(LOG_NOTICE, "devname:%s ,net:%s ,mask:%s . The PID is %d", devname, net, mask, getpid());
+
   pthread_mutex_init(&hash_lock, NULL);
-  pthread_t sigtid,workid,workid2;
+  pthread_t sigtid,workid;
   pthread_attr_init(&attr);
   pthread_attr_setdetachstate (&attr, PTHREAD_CREATE_DETACHED);
+  atexit(myexit);
 
   ht     = (struct node **)calloc(HASHSIZE  , sizeof(struct node*));
   ht_out = (struct node **)calloc(HASHSIZEIN, sizeof(struct node*));
   sigfillset(&mask_sig);
-  if (pthread_sigmask(SIG_BLOCK, &mask_sig, NULL) != 0 ){
+  if ((perr = pthread_sigmask(SIG_BLOCK, &mask_sig, NULL)) != 0 ){
     printf("pthread_sigmask error\n"); exit(1);
   }
-  if (pthread_create(&sigtid, &attr, (void *)th_sigs, NULL) != 0){
+  if ((perr = pthread_create(&sigtid, &attr, (void *)th_sigs, NULL)) != 0){
     printf("pthread_th_sigs error\n"); exit(1);
   }
-  if (pthread_create(&workid, NULL, th_works, devname) != 0 ){
+  if ((perr = pthread_create(&workid, NULL, th_works, devname)) != 0 ){
     printf("pthread_th_works error\n"); exit(1);
   }
-
   alarm(300);
-  if ((perr = pthread_join(sigtid, NULL)) != 0){
-    syslog(LOG_ERR, "pthread_join err: %s", strerror(perr));
+  int forint=0;
+  for (;;){
+    forint++; sleep(60);
   }
-  if ((perr = pthread_join(workid, NULL)) != 0){
-    syslog(LOG_ERR, "pthread_join err: %s", strerror(perr));
-  }
-
   return 0;
 }

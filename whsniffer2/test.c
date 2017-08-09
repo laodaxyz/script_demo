@@ -1,26 +1,18 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+#include <arpa/inet.h>
 
-#define HASHSIZE 7
-typedef struct nodes{
-     long long ip;
-     long long bytes;
-     long long packets;
-     long long tcp;
-     long long udp;
-     long long icmp;
-     long long other;
-    struct nodes *next;
-}htnode;
-typedef htnode **hashtable;
-hashtable ht;   
+int main()  
+{
+  int ip;
+  char *net;
+  ip = inet_addr("255.255.255.255");
+  struct in_addr addr;
+  addr.s_addr = ip;
 
-int main(){
-  for (int i = 0; i < 10; ++i)
-  {
-    if (i>4) break;
-    printf("%d\n", i);
-  }
-  return 0;   
-}
+  printf("%d\n", ip);
+  printf("%s\n", inet_ntoa(addr));
+  
+} 
