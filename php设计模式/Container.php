@@ -1,4 +1,5 @@
 <?php
+//laravel ioc
 
 interface Visit{
     public function go();
