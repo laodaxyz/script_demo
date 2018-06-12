@@ -1,0 +1,23 @@
+{
+  "require": {
+    "noahbuscher/macaw": "dev-master",
+    "illuminate/database": "*",
+    "filp/whoops": "*",
+    "nette/mail": "*",
+    "predis/predis": "*"
+  },
+  "autoload": {
+    "classmap": [
+      "Services"
+    ],
+    "psr-4": {
+      "App\\": "app/"
+    }
+  },
+  "repositories": {
+    "packagist": {
+      "type": "composer",
+      "url": "https://packagist.phpcomposer.com"
+    }
+  }
+}
