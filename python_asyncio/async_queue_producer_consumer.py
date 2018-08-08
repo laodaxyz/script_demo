@@ -20,7 +20,7 @@ async def consumer(n, q):
 async def producer(q, num_workers):
     print('producer: starting')
     # Add some numbers to the queue to simulate jobs
-    for i in range(num_workers * 1000):
+    for i in range(num_workers * 3):
         await q.put(i)
         print('producer: added task {} to the queue'.format(i))
     # Add None entries in the queue

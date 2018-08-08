@@ -1,4 +1,5 @@
 import threading
+import Queue
 import logging
  
 def do_threaded_work(work_items, work_func, num_threads=None, per_sync_timeout=1, preserve_result_ordering=True):
